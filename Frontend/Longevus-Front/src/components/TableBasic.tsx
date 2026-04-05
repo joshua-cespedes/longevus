@@ -22,19 +22,20 @@ export interface GenericTableProps<T>{
 
 }
 
-function GenericTable<T extends {id: number}>({data,columns,selectedRows,onSelectAll,renderActions}: GenericTableProps<T>) {
+function GenericTable<T extends {id: number}>({data,columns,selectedRows,onSelectAll, onToggleRow,renderActions}: GenericTableProps<T>) {
 
     // Calculamos si todas las filas están seleccionadas para pasarlo a la cabecera
     const isSelectedAll = data.length > 0 && selectedRows.size === data.length;
     return(
-        <table className="table table-responsive table-hover">
+        <div className="table-container">
+        <table className="table table-bordered table-hover w-100">
+
             <thead>
                 <tr>
                     {columns.map((column, index)=>
                     <th key={index}>     
                             {column.Header ? (
-                                // Si tiene un renderizador de cabecera personalizado, lo usamos
-                                // Le pasamos la información que necesita
+                                // Si tiene un renderizador de cabecera personalizado
                                 column.Header({
                                     allRows: data,
                                     selectedRows: selectedRows,
@@ -42,7 +43,7 @@ function GenericTable<T extends {id: number}>({data,columns,selectedRows,onSelec
                                     onSelectAll: onSelectAll,
                                 })
                             ) : (
-                        // Si no, usamos el header string simple
+                      
                         column.header
                         )}
                     </th>
@@ -70,6 +71,7 @@ function GenericTable<T extends {id: number}>({data,columns,selectedRows,onSelec
                 )}
             </tbody>
         </table>
+       </div> 
     )
 }
 export default GenericTable;

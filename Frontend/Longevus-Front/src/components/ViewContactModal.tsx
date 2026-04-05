@@ -1,27 +1,21 @@
 import { useState } from "react";
 import AddContactModal from "./AddContactModal";
-
-export interface Contact {
-    id: number;
-    idResident: number;
-    name: string;
-    phoneNumber: string;
-    relationShip: string;
-}
-
+import type { Resident } from "../services/ResidentService";
+import type { Contact } from "../services/ContactService";
+import { useAuth } from "../context/AuthContext";
 interface ContactProps {
     show: boolean;
     onClose: () => void;
     residentName?: string;
     contactsList: Contact[];
-    onDeleteContact: (id: number) => void; //función para eliminar un contacto
-    onEditContact: (contact: Contact) => void; //función para editar un contacto
+    onDeleteContact: (id: number) => void; 
+    onEditContact: (contact: Contact) => void; 
 }
 
 const ViewContactModal: React.FC<ContactProps> = ({ show, onClose, residentName, contactsList, onDeleteContact, onEditContact }) => {
 
     const [showEditContactModal, setEditContactModal] = useState<Contact | null>(null);
-
+    const {hasAuthority} = useAuth();
     if (!show)
         return null;
     return (
@@ -47,18 +41,27 @@ const ViewContactModal: React.FC<ContactProps> = ({ show, onClose, residentName,
                                         <p className="mb-1"><strong>Teléfono:</strong> {contact.phoneNumber}</p>
                                         <p className="mb-2"><strong>Relación:</strong> {contact.relationShip}</p>
                                         <div className="d-flex gap-2">
+                                            {hasAuthority('PERMISSION_CONTACTOS_UPDATE') && (
                                             <button
-                                                className="btn btn-sm btn-primary"
-                                                onClick={() => setEditContactModal(contact)}
+                                                className="btn btn-sm btn-warning"
+                                                onClick={() => {
+                                                    console.log("Editing contact:", contact);
+                                                    console.log("Resident exists:", !!contact.resident);
+                                                    console.log("Contacto a editar:", contact);
+                                                    setEditContactModal(contact)
+                                                }}
                                             >
-                                                Editar
+                                                <i className="bi bi-pencil-square"/>
                                             </button>
+                                            )}
+                                            {hasAuthority('PERMISSION_CONTACTOS_DELETE') && (
                                             <button
                                                 className="btn btn-sm btn-danger"
                                                 onClick={() => onDeleteContact(contact.id)}
                                             >
-                                                Eliminar
+                                                <i className="bi bi-trash-fill"/>
                                             </button>
+                                            )}
                                         </div>
                                     </li>
                                 ))}
@@ -66,7 +69,7 @@ const ViewContactModal: React.FC<ContactProps> = ({ show, onClose, residentName,
                         )}
                     </div>
 
-                    <div className="modal-footer">
+                    <div className="modal-footer justify-content-start">
                         <button type="button" className="btn btn-secondary" onClick={onClose}>
                             Cerrar
                         </button>
@@ -79,7 +82,7 @@ const ViewContactModal: React.FC<ContactProps> = ({ show, onClose, residentName,
                     show={true}
                     onClose={() => setEditContactModal(null)}
                     residentName={residentName}
-                    residentId={showEditContactModal.idResident}
+                    residentId={showEditContactModal.resident.id}
                     onAddContact={(updatedContact) => {
                         onEditContact(updatedContact);
                     }}

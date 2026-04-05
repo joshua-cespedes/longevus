@@ -6,7 +6,7 @@ import { type ChangeEvent } from 'react';
     exitTime: string;
 }
 interface IDayScheduleEditorProps {
-    shifts: IShift[]; // El array de turnos(horarios) comunes
+    shifts: IShift[]; 
     onUpdateShift: (index: number, field: 'entryTime' | 'exitTime', value: string) => void; 
     onAddShift: () => void; 
     onRemoveShift: (id: string) => void; 
@@ -17,7 +17,7 @@ const HourSelector = ({ shifts, onUpdateShift, onAddShift, onRemoveShift }: IDay
 
     return (
         <div className='mb-3 border p-3 rounded bg-light'> 
-            <h4 className="mb-3">Definir Horario <i className="bi bi-clock-fill"></i></h4>
+            <h4 className="mb-3"><i className="bi bi-clock-fill"></i>Definir Horario </h4>
             {shifts.map((shift, index) => (
                 <div key={shift.id} className="border p-3 mb-3 rounded bg-light">
                     <h6 className="mb-3 d-block">Turno {index + 1}</h6>

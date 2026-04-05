@@ -2,14 +2,20 @@
 import React, { useState } from 'react';
 import Header from '../../components/HeaderAdmin';
 import Footer from '../../components/Footer';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { createSupplier } from '../../services/SupplierService'
+import { succesAlert, errorAlert } from '../../js/alerts';
 
 export default function SuppliersAdd() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const navigate = useNavigate();
+
+  //manejar inputs vacios
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -20,24 +26,34 @@ export default function SuppliersAdd() {
   });
 
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(f => ({ ...f, [name]: value }));
   };
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    setFormData({
-      ...formData,
-      photoUrl: URL.createObjectURL(file), // opcional, para previsualizar
-    });
-  }
-};
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setFormData({
+        ...formData,
+        photoUrl: URL.createObjectURL(file), // opcional, para previsualizar
+      });
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setTouched(target => ({ ...target, [name]: true }));
 
 
-  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
+    setErrors(err => ({
+      ...err,
+      [name]: value.trim() ? '' : 'Este campo es obligatorio'}));
+  };
+
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const data = new FormData();
@@ -48,28 +64,22 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       data.append('isActive', formData.isActive.toString());
 
       if (selectedFile) {
-      data.append('photo', selectedFile); //el archivo real
-    }
+        data.append('photo', selectedFile); //el archivo real
+      }
 
-     const config = {headers: {'Content-Type': 'multipart/form-data',},};
 
-      const res = await axios.post(
-        'http://localhost:8080/suppliers/save', //hago el post
-        data,config
-      );
-      console.log('Proveedor guardado:', res.data);
-
-      
-      console.log('Guardado:', res.data);
+      await createSupplier(data);
+      succesAlert("Agregado", "Proveedor agregado correctamente");
       navigate('/proveedores');
     } catch (error) {
+      errorAlert("Hubo un error al agregar al proveedor");
       console.error('Error saving supplier:', error);
     }
   };
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className='container mt-5 form-container'>
         <div className='row'>
           <div className='col-12'>
@@ -78,59 +88,84 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             </center>
             <form onSubmit={handleSubmit}>
               <div className='mb-3'>
-                <label htmlFor='name' className='form-label'>Nombre:<i className="bi bi-person-fill"></i></label>
+                <label htmlFor='name' className='form-label'><i className="bi bi-person-fill"></i>Nombre:</label>
                 <input
                   type='text'
                   id='name'
                   name='name'
                   value={formData.name}
                   onChange={handleChange}
-                  className='form-control'
+                  onBlur={handleBlur}
+                  className={`form-control ${touched.name && errors.name ? 'is-invalid' : ''}`}
                   required
                 />
+                {touched.name && errors.name && (
+                  <div className="invalid-feedback">
+                    {errors.name}
+                  </div>
+                )}
+
               </div>
 
               <div className='mb-3'>
-                <label htmlFor='phoneNumber' className='form-label'>Teléfono:<i className="bi bi-telephone-plus-fill"></i></label>
+                <label htmlFor='phoneNumber' className='form-label'><i className="bi bi-telephone-plus-fill"></i>Teléfono:</label>
                 <input
                   type='text'
                   id='phoneNumber'
                   name='phoneNumber'
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className='form-control'
+                  onBlur={handleBlur}
+                  className={`form-control ${touched.phoneNumber && errors.phoneNumber ? 'is-invalid' : ''}`}
                   required
                 />
+                {touched.phoneNumber && errors.phoneNumber && (
+                  <div className="invalid-feedback">
+                    {errors.phoneNumber}
+                  </div>
+                )}
               </div>
 
               <div className='mb-3'>
-                <label htmlFor='email' className='form-label'>Correo:<i className="bi bi-envelope-fill"></i></label>
+                <label htmlFor='email' className='form-label'><i className="bi bi-envelope-fill"></i>Correo:</label>
                 <input
                   type='text'
                   id='email'
                   name='email'
                   value={formData.email}
                   onChange={handleChange}
-                  className='form-control'
+                  onBlur={handleBlur}
+                  className={`form-control ${touched.email && errors.email ? 'is-invalid' : ''}`}
                   required
                 />
+                {touched.email && errors.email && (
+                  <div className="invalid-feedback">
+                    {errors.email}
+                  </div>
+                )}
               </div>
 
               <div className='mb-3'>
-                <label htmlFor='address' className='form-label'>Dirección:<i className="bi bi-compass"></i></label>
+                <label htmlFor='address' className='form-label'><i className="bi bi-compass"></i>Dirección:</label>
                 <input
                   type='text'
                   id='address'
                   name='address'
                   value={formData.address}
                   onChange={handleChange}
-                  className='form-control'
+                  onBlur={handleBlur}
+                  className={`form-control ${touched.address && errors.address ? 'is-invalid' : ''}`}
                   required
                 />
+                {touched.address && errors.address && (
+                  <div className="invalid-feedback">
+                    {errors.address}
+                  </div>
+                )}
               </div>
 
               <div className='mb-3'>
-                <label htmlFor='photo' className='form-label'>Fotografía:<i className="bi bi-image"></i></label>
+                <label htmlFor='photo' className='form-label'><i className="bi bi-image"></i>Fotografía:</label>
                 <input
                   type='file'
                   id='photo'
@@ -143,14 +178,14 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
 
               <div className='mb-3'>
-                <button type='submit' className='btn btn-success'>Guardar</button>
-                <a href='/proveedores' className='btn btn-light m-1'>Volver</a>
+                <a href='/proveedores' className='btn btn-secondary m-1'>Volver</a>
+                <button type='submit' className='btn btn-primary'>Guardar</button>
               </div>
             </form>
           </div>
         </div>
       </div>
-      <Footer/>
+      {/* <Footer /> */}
     </>
   );
 }
